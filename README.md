@@ -4,7 +4,7 @@
 
 ## Backend Stack
 
-> `Spring Boot`、`Spring Security`、`Socket.io`、`Redis`、`MongoDB`、`Nginx`、`FastDFS`等
+> `Spring Boot`、`Spring Security`、`Socket.io`、`Redis`、`MongoDB`、`Nginx`、`FastDFS`等。
 
 ## Description
 
@@ -22,4 +22,19 @@
 
   - `fastDFS`搭建教程：[Centos7.x 搭建FastDFS并通过Nginx配置http或https访问](https://www.jianshu.com/p/e60797e328d3)
   - 修改配置文件中的参数：`fastdfs.nginx.host=文件服务器的域名或IP`
+
+- 搭建好`MongoDB`数据库后，用`Spring Boot Test`测试先往`MongoDB`数据库插入一条记录。
+
+```java
+@Test
+void initSystemUser() {
+    SystemUser systemUser = new SystemUser();
+    systemUser.setCode("111111");
+    systemUser.setNickname("验证消息");
+    systemUser.setStatus(1);
+    sysService.addSystemUser(systemUser);
+}
+```
+
+- 打包前先将`ChatServerApplicationTests.java`文件注释掉，然后点击`Maven`->`package`，将生成的`jar`包上传到服务器，执行后台运行该项目的命令：`nohup java -jar chatserver-0.0.1-SNAPSHOT.jar &`，项目运行过程中使用命令：`tail -f nohup.out`实时查看项目运行日志。
 
