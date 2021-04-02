@@ -1,0 +1,33 @@
+spring:
+  data:
+    mongodb:
+      host: 127.0.0.1
+      database: chatdb
+      port: 27017
+    redis:
+      repositories:
+        enabled: false
+  redis:
+    database: 5
+    host: 127.0.0.1
+    port: 6379
+    password: 123456
+logging:
+  level:
+    org.springframework.data.mongodb.core: DEBUG
+socketio:
+  port: 9999
+  workCount: 100
+  allowCustomRequests: true
+  upgradeTimeout: 10000
+  pingTimeout: 60000
+  pingInterval: 25000
+  maxHttpContentLength: 1048576
+  maxFramePayloadLength: 1048576
+server:
+  servlet:
+    context-path: /chat
+  port: 5555
+fastdfs:
+  nginx:
+    host: https://xxxxx/ # 更换为自己的域名
