@@ -7,6 +7,7 @@ import com.zzw.chatserver.common.R;
 import com.zzw.chatserver.common.ResultEnum;
 import com.zzw.chatserver.pojo.User;
 import com.zzw.chatserver.pojo.vo.LoginRequestVo;
+import com.zzw.chatserver.service.OnlineUserService;
 import com.zzw.chatserver.utils.JwtUtils;
 import com.zzw.chatserver.utils.ResponseUtil;
 import com.zzw.chatserver.utils.SocketIoServerMapUtil;
@@ -33,9 +34,12 @@ public class JwtLoginAuthFilter extends UsernamePasswordAuthenticationFilter {
 
     private MongoTemplate mongoTemplate;
 
-    public JwtLoginAuthFilter(AuthenticationManager authenticationManager, MongoTemplate mongoTemplate) {
+    private OnlineUserService onlineUserService;
+
+    public JwtLoginAuthFilter(AuthenticationManager authenticationManager, MongoTemplate mongoTemplate, OnlineUserService onlineUserService) {
         this.authenticationManager = authenticationManager;
         this.mongoTemplate = mongoTemplate;
+        this.onlineUserService = onlineUserService;
         this.setFilterProcessesUrl("/user/login");
     }
 
@@ -69,7 +73,9 @@ public class JwtLoginAuthFilter extends UsernamePasswordAuthenticationFilter {
             //================================在这里对账号进行判别=========
             if (jwtUser.getStatus() == 1 || jwtUser.getStatus() == 2)
                 ResponseUtil.out(response, R.error().resultEnum(ResultEnum.ACCOUNT_IS_FROZEN_OR_CANCELLED));
-            else if (SocketIoServerMapUtil.getUidToUserMap().containsKey(jwtUser.getUserId().toString())) //用户已经在别处登录了
+            /*else if (SocketIoServerMapUtil.getUidToUserMap().containsKey(jwtUser.getUserId().toString())) //用户已经在别处登录了
+                ResponseUtil.out(response, R.error().resultEnum(ResultEnum.USER_HAS_LOGGED));*/
+            else if (onlineUserService.checkCurUserIsOnline(jwtUser.getUserId().toString())) //用户已经在别处登录了
                 ResponseUtil.out(response, R.error().resultEnum(ResultEnum.USER_HAS_LOGGED));
             else { //用户通过验证
                 Query query = new Query();

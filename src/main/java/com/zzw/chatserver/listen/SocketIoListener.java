@@ -54,6 +54,12 @@ public class SocketIoListener {
     @Resource
     private SensitiveFilter sensitiveFilter;
 
+    @Resource
+    private OnlineUserService onlineUserService;
+
+    @Resource
+    private SysService sysService;
+
     /**
      * map：clientId -> uid（用户判断用户上下线）
      * map：uid -> simpleUser（用于查询是否已经登录）
@@ -74,11 +80,21 @@ public class SocketIoListener {
         //清除用户登录信息
         cleanLoginInfo(client.getSessionId().toString());
         logger.info("链接关闭，urlParams：{}", urlParams);
-        logger.info("剩余在线人数：{}", SocketIoServerMapUtil.getUidToUserMap().size());
+        // logger.info("剩余在线人数：{}", SocketIoServerMapUtil.getUidToUserMap().size());
+        // logger.info("剩余在线人数：{}", onlineUserService.countOnlineUser());
+        socketIOServer.getBroadcastOperations().sendEvent("onlineUser", onlineUserService.getOnlineUidSet());
     }
 
     private void cleanLoginInfo(String clientId) {
-        String uid = SocketIoServerMapUtil.getUid(clientId);
+        SimpleUser simpleUser = onlineUserService.getSimpleUserByClientId(clientId);
+        if (simpleUser != null) {
+            onlineUserService.removeClientAndUidInSet(clientId, simpleUser.getUid());
+            //设置下线用户的在线时长
+            long onlineTime = DateUtil.getTimeDelta(simpleUser.getLastLoginTime(), new Date());
+            userService.updateOnlineTime(onlineTime, simpleUser.getUid());
+        }
+
+        /*String uid = SocketIoServerMapUtil.getUid(clientId);
         if (uid != null) {
             SimpleUser simpleUser = SocketIoServerMapUtil.getUser(uid);
             // System.out.println("待删除的用户信息为：" + simpleUser);
@@ -91,14 +107,14 @@ public class SocketIoListener {
             }
             //后删除 clientId -> uid 的一对键值对
             SocketIoServerMapUtil.removeUid(clientId);
-        }
+        }*/
         printMessage();
     }
 
     private void printMessage() {
-        logger.info("当前在线客户端为：{}", SocketIoServerMapUtil.getClientToUidMap());
-        logger.info("在线用户的信息为：{}", SocketIoServerMapUtil.getUidToUserMap());
-        logger.info("在线用户人数为：{}", SocketIoServerMapUtil.getUidToUserMap().size());
+        //logger.info("当前在线客户端为：{}", SocketIoServerMapUtil.getClientToUidMap());
+        //logger.info("在线用户的信息为：{}", SocketIoServerMapUtil.getUidToUserMap());
+        logger.info("当前在线用户人数为：{}", onlineUserService.countOnlineUser());
     }
 
     //用户上线了
@@ -109,13 +125,16 @@ public class SocketIoListener {
         SimpleUser simpleUser = new SimpleUser();
         BeanUtils.copyProperties(user, simpleUser);
 
-        SocketIoServerMapUtil.putUid(clientId, user.getUid());
-        SocketIoServerMapUtil.putUser(user.getUid(), simpleUser);
+        onlineUserService.addClientIdToSimpleUser(clientId, simpleUser);
+        // SocketIoServerMapUtil.putUid(clientId, user.getUid());
+        // SocketIoServerMapUtil.putUser(user.getUid(), simpleUser);
 
         printMessage();
 
         //广播所有在线用户
-        socketIOServer.getBroadcastOperations().sendEvent("onlineUser", SocketIoServerMapUtil.getUidToUserMap());
+        // socketIOServer.getBroadcastOperations().sendEvent("onlineUser", SocketIoServerMapUtil.getUidToUserMap());
+        socketIOServer.getBroadcastOperations().sendEvent("onlineUser", onlineUserService.getOnlineUidSet());
+
     }
 
     //用户下线了
@@ -125,7 +144,8 @@ public class SocketIoListener {
         //清除用户登录信息
         cleanLoginInfo(client.getSessionId().toString());
         //广播所有在线用户
-        socketIOServer.getBroadcastOperations().sendEvent("onlineUser", SocketIoServerMapUtil.getUidToUserMap());
+        // socketIOServer.getBroadcastOperations().sendEvent("onlineUser", SocketIoServerMapUtil.getUidToUserMap());
+        socketIOServer.getBroadcastOperations().sendEvent("onlineUser", onlineUserService.getOnlineUidSet());
     }
 
     @OnEvent("isReadMsg")
@@ -180,7 +200,22 @@ public class SocketIoListener {
     @OnEvent("sendValidateMessage")
     public void sendValidateMessage(SocketIOClient client, ValidateMessage validateMessage) {
         logger.info("sendValidateMessage ---> validateMessage：{}", validateMessage);
-        validateMessage.setAdditionMessage(sensitiveFilter.filter(validateMessage.getAdditionMessage()));
+        String[] res = sensitiveFilter.filter(validateMessage.getAdditionMessage());
+        String filterContent = "";
+        if (res != null) {
+            filterContent = res[0];
+            if (res[1].equals("1")) { //添加敏感词消息记录
+                SensitiveMessage sensitiveMessage = new SensitiveMessage();
+                sensitiveMessage.setRoomId(validateMessage.getRoomId());
+                sensitiveMessage.setSenderId(validateMessage.getSenderId().toString());
+                sensitiveMessage.setSenderName(validateMessage.getSenderName());
+                sensitiveMessage.setMessage(validateMessage.getAdditionMessage());
+                sensitiveMessage.setType(ConstValueEnum.VALIDATE);
+                sensitiveMessage.setTime(validateMessage.getTime());
+                sysService.addSensitiveMessage(sensitiveMessage);
+            }
+        }
+        validateMessage.setAdditionMessage(filterContent);
         ValidateMessage addValidateMessage = validateMessageService.addValidateMessage(validateMessage);
         if (addValidateMessage != null) {//验证消息添加成功了才通知房间消息
             Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(validateMessage.getRoomId()).getClients(); //实际上同一房间只有2个客户端
@@ -230,7 +265,8 @@ public class SocketIoListener {
         logger.info("sendDelGoodFriend ---> conversationVo：{}", conversationVo);
         //转发一下消息
         //获取当前删除者的id
-        String uid = SocketIoServerMapUtil.getUid(client.getSessionId().toString());
+        //String uid = SocketIoServerMapUtil.getUid(client.getSessionId().toString());
+        String uid = onlineUserService.getSimpleUserByClientId(client.getSessionId().toString()).getUid();
         //把会话id改为删除好友者，该会话的其他属性值不用管，这样传给被删除人的客户端时就显示为 被删除人也删除 删除人
         conversationVo.setId(uid);
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端

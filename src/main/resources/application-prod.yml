@@ -4,6 +4,8 @@ spring:
       host: 127.0.0.1
       database: chatdb
       port: 27017
+      username: xxxx
+      password: xxxx
     redis:
       repositories:
         enabled: false

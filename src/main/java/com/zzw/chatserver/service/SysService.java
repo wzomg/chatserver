@@ -2,10 +2,15 @@ package com.zzw.chatserver.service;
 
 import com.zzw.chatserver.dao.SysDao;
 import com.zzw.chatserver.pojo.FeedBack;
+import com.zzw.chatserver.pojo.SensitiveMessage;
 import com.zzw.chatserver.pojo.SystemUser;
+import com.zzw.chatserver.pojo.vo.FeedBackResultVo;
+import com.zzw.chatserver.pojo.vo.SensitiveMessageResultVo;
 import com.zzw.chatserver.pojo.vo.SystemUserResponseVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -20,8 +25,16 @@ public class SysService {
     @Resource
     private MongoTemplate mongoTemplate;
 
-    public void addSystemUser(SystemUser user) {
-        sysDao.save(user);
+    /**
+     * 项目一启动就检查一下
+     */
+    public void notExistThenAddSystemUser(SystemUser user) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("code").is(user.getCode()));
+        SystemUser one = mongoTemplate.findOne(query, SystemUser.class);
+        if (one == null) {
+            sysDao.save(user);
+        }
     }
 
     public List<SystemUserResponseVo> getSysUsers() {
@@ -39,5 +52,18 @@ public class SysService {
 
     public void addFeedBack(FeedBack feedBack) {
         mongoTemplate.insert(feedBack, "feedbacks");
+    }
+
+    public void addSensitiveMessage(SensitiveMessage sensitiveMessage) {
+        mongoTemplate.insert(sensitiveMessage, "sensitivemessages");
+    }
+
+    public List<SensitiveMessageResultVo> getSensitiveMessageList() {
+        return mongoTemplate.findAll(SensitiveMessageResultVo.class, "sensitivemessages");
+    }
+
+
+    public List<FeedBackResultVo> getFeedbackList() {
+        return mongoTemplate.findAll(FeedBackResultVo.class, "feedbacks");
     }
 }

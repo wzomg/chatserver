@@ -1,21 +1,26 @@
 package com.zzw.chatserver;
 
 import com.alibaba.fastjson.JSON;
+import com.sun.management.OperatingSystemMXBean;
 import com.zzw.chatserver.pojo.AccountPool;
 import com.zzw.chatserver.pojo.Group;
 import com.zzw.chatserver.pojo.SystemUser;
 import com.zzw.chatserver.pojo.vo.*;
 import com.zzw.chatserver.service.*;
 import com.zzw.chatserver.utils.FastDFSUtil;
+import com.zzw.chatserver.utils.RedisKeyUtil;
 import org.csource.common.MyException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.Resource;
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @SpringBootTest
 class ChatServerApplicationTests {
@@ -44,14 +49,16 @@ class ChatServerApplicationTests {
     @Resource
     private SysService sysService;
 
-    //springboot启动后看数据库是否有数据，默认初始化一下
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
+
     @Test
     void initSystemUser() {
         SystemUser systemUser = new SystemUser();
         systemUser.setCode("111111");
         systemUser.setNickname("验证消息");
         systemUser.setStatus(1);
-        sysService.addSystemUser(systemUser);
+        sysService.notExistThenAddSystemUser(systemUser);
     }
 
     @Test
@@ -195,5 +202,35 @@ class ChatServerApplicationTests {
         FileOutputStream fos = new FileOutputStream(new File("C:\\Users\\17283\\Desktop\\01.xlsx"));
         fos.write(bytes);
         fos.close();
+    }
+
+    @Test
+    void testRedisSet() {
+        String onlineUserSetKey = RedisKeyUtil.getOnlineUidSetKey();
+        redisTemplate.opsForSet().add(onlineUserSetKey, "1a");
+        redisTemplate.opsForSet().add(onlineUserSetKey, "2a");
+        redisTemplate.opsForSet().add(onlineUserSetKey, "3a");
+
+        //redisTemplate.opsForSet().remove(onlineUserSetKey, "2a");
+
+        Set<Object> members = redisTemplate.opsForSet().members(onlineUserSetKey);
+        System.out.println("用户id列表：" + JSON.toJSONString(members));
+
+        redisTemplate.delete(onlineUserSetKey);
+        members = redisTemplate.opsForSet().members(onlineUserSetKey);
+        System.out.println("删除key后的用户id列表：" + JSON.toJSONString(members));
+    }
+
+    @Test
+    void testGetCPUAndMem() {
+        //此 API JDK必须是1.8及以上的
+        OperatingSystemMXBean osmxb = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        double cpuLoad = osmxb.getSystemCpuLoad();
+        System.err.println("cpuLoad:" + cpuLoad);
+
+        double totalvirtualMemory = osmxb.getTotalPhysicalMemorySize();
+        double freePhysicalMemorySize = osmxb.getFreePhysicalMemorySize();
+        double value = freePhysicalMemorySize / totalvirtualMemory;
+        System.err.println("men:" + (1 - value));
     }
 }

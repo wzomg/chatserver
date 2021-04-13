@@ -3,6 +3,8 @@ package com.zzw.chatserver.common;
 public interface ConstValueEnum {
     public static final String FRIEND = "FRIEND";
     public static final String GROUP = "GROUP";
+    public static final String VALIDATE = "VALIDATE";
+
 
     public static final Integer USERTYPE = 1; //用户
     public static final Integer GROUPTYPE = 2; //群聊

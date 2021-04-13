@@ -16,7 +16,7 @@ import java.util.List;
 public class SingleMessage {
     @Id
     private ObjectId id;
-    private String roomId; //添加
+    private String roomId; // 房间
     private ObjectId senderId; // 发送者Id
     private String senderName;  // 发送者登录名
     private String senderNickname; // 发送者昵称

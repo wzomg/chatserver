@@ -8,6 +8,7 @@ import com.zzw.chatserver.pojo.AccountPool;
 import com.zzw.chatserver.pojo.User;
 import com.zzw.chatserver.pojo.vo.*;
 import com.zzw.chatserver.utils.ChatServerUtil;
+import com.zzw.chatserver.utils.DateUtil;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -266,5 +267,26 @@ public class UserService {
                 .set("color", requestVo.getColor())
                 .set("bgColor", requestVo.getBgColor());
         return mongoTemplate.upsert(query, update, User.class).getModifiedCount() > 0;
+    }
+
+    //获取所有用户信息
+    public List<User> getUserList() {
+        return userDao.findAll();
+    }
+
+    // 根据注册时间获取用户
+    public List<User> getUsersBySignUpTime(String lt, String rt) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("signUpTime").gte(DateUtil.parseDate(lt, DateUtil.yyyy_MM))
+                .lte(DateUtil.parseDate(rt, DateUtil.yyyy_MM)));
+        return mongoTemplate.find(query, User.class);
+    }
+
+    public void changeUserStatus(String uid, Integer status) {
+        Update update = new Update();
+        update.set("status", status);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(new ObjectId(uid)));
+        mongoTemplate.findAndModify(query, update, User.class);
     }
 }

@@ -14,6 +14,13 @@ public class DateUtil {
      */
     public static final String yyyy_MM_dd_HH_mm_ss = "yyyy-MM-dd HH:mm:ss";
 
+
+    /**
+     * 时间格式（yyyy-MM）
+     */
+    public static final String yyyy_MM = "yyyy-MM";
+
+
     public static String format(Date date, String format) {
         SimpleDateFormat sdf = new SimpleDateFormat(format);
         return sdf.format(date);

@@ -3,9 +3,16 @@ package com.zzw.chatserver.controller;
 import com.zzw.chatserver.common.R;
 import com.zzw.chatserver.filter.SensitiveFilter;
 import com.zzw.chatserver.pojo.FeedBack;
+import com.zzw.chatserver.pojo.SensitiveMessage;
+import com.zzw.chatserver.pojo.User;
+import com.zzw.chatserver.pojo.vo.FeedBackResultVo;
+import com.zzw.chatserver.pojo.vo.SensitiveMessageResultVo;
 import com.zzw.chatserver.pojo.vo.SystemUserResponseVo;
+import com.zzw.chatserver.service.OnlineUserService;
 import com.zzw.chatserver.service.SysService;
+import com.zzw.chatserver.service.UserService;
 import com.zzw.chatserver.utils.FastDFSUtil;
+import com.zzw.chatserver.utils.SystemUtil;
 import org.apache.commons.io.IOUtils;
 import org.csource.common.MyException;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +40,12 @@ public class SysController {
 
     @Resource
     private SensitiveFilter sensitiveFilter;
+
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private OnlineUserService onlineUserService;
 
 
     /**
@@ -130,10 +143,89 @@ public class SysController {
     /**
      * 过滤发送的消息
      */
-    @GetMapping("/filterMessage")
+    @PostMapping("/filterMessage")
     @ResponseBody
-    public R filterMessage(String message) {
-        String filterContent = sensitiveFilter.filter(message);
+    public R filterMessage(@RequestBody SensitiveMessage sensitiveMessage) {
+        String[] res = sensitiveFilter.filter(sensitiveMessage.getMessage());
+        String filterContent = "";
+        if (res != null) {
+            filterContent = res[0];
+            if (res[1].equals("1")) {
+                //判断出敏感词，插入到敏感词表中
+                sysService.addSensitiveMessage(sensitiveMessage);
+            }
+        }
         return R.ok().data("message", filterContent);
+    }
+
+    /**
+     * 获取系统cpu、内存使用率
+     */
+    @GetMapping("/sysSituation")
+    @ResponseBody
+    public R getSysInfo() {
+        double cpuUsage = SystemUtil.getSystemCpuLoad();
+        double memUsage = SystemUtil.getSystemMemLoad();
+        return R.ok().data("cpuUsage", cpuUsage).data("memUsage", memUsage);
+    }
+
+    /**
+     * 获取所有用户信息
+     */
+    @GetMapping("/getAllUser")
+    @ResponseBody
+    public R getAllUser() {
+        List<User> userList = userService.getUserList();
+        return R.ok().data("userList", userList);
+    }
+
+    /**
+     * 根据注册时间获取用户
+     */
+    @GetMapping("/getUsersBySignUpTime")
+    @ResponseBody
+    public R getUsersBySignUpTime(String lt, String rt) {
+        List<User> userList = userService.getUsersBySignUpTime(lt, rt);
+        return R.ok().data("userList", userList);
+    }
+
+    /**
+     * 获取在线用户个数
+     */
+    @GetMapping("/countOnlineUser")
+    @ResponseBody
+    public R getOnlineUserNums() {
+        int onlineUserCount = onlineUserService.countOnlineUser();
+        return R.ok().data("onlineUserCount", onlineUserCount);
+    }
+
+    /**
+     * 更改用户状态
+     */
+    @GetMapping("/changeUserStatus")
+    @ResponseBody
+    public R changeUserStatus(String uid, Integer status) {
+        userService.changeUserStatus(uid, status);
+        return R.ok();
+    }
+
+    /**
+     * 获取所有敏感消息列表
+     */
+    @GetMapping("/getSensitiveMessageList")
+    @ResponseBody
+    public R getSensitiveMessageList() {
+        List<SensitiveMessageResultVo> sensitiveMessageList = sysService.getSensitiveMessageList();
+        return R.ok().data("sensitiveMessageList", sensitiveMessageList);
+    }
+
+    /**
+     * 获取所有反馈记录列表
+     */
+    @GetMapping("/getFeedbackList")
+    @ResponseBody
+    public R getFeedbackList() {
+        List<FeedBackResultVo> feedbackList = sysService.getFeedbackList();
+        return R.ok().data("feedbackList", feedbackList);
     }
 }

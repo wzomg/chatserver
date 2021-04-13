@@ -5,6 +5,7 @@ import com.zzw.chatserver.filter.JwtLoginAuthFilter;
 import com.zzw.chatserver.filter.JwtPreAuthFilter;
 import com.zzw.chatserver.filter.KaptchaFilter;
 import com.zzw.chatserver.handler.ChatLogoutSuccessHandler;
+import com.zzw.chatserver.service.OnlineUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +40,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Resource
     private MongoTemplate mongoTemplate;
 
+    @Resource
+    private OnlineUserService onlineUserService;
+
     //加密器
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -55,7 +59,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         //巨坑，这里不能加上context-path:/chat，不然不能拦截
-        web.ignoring().antMatchers("/user/getCode", "/sys/getFaceImages", "/user/register", "/sys/downloadFile");
+        web.ignoring().antMatchers("/user/getCode", "/sys/getFaceImages", "/user/register", "/sys/downloadFile",
+                "/swagger-resources/**", "/webjars/**", "/v2/**", "/swagger-ui.html/**", "/superuser/login"
+        );
     }
 
     @Override
@@ -71,9 +77,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // 添加到过滤链中，放在验证用户密码之前
                 .addFilterBefore(new KaptchaFilter(redisTemplate), UsernamePasswordAuthenticationFilter.class)
                 // 先是UsernamePasswordAuthenticationFilter用于login校验
-                .addFilter(new JwtLoginAuthFilter(authenticationManager(), mongoTemplate))
+                .addFilter(new JwtLoginAuthFilter(authenticationManager(), mongoTemplate, onlineUserService))
                 // 再通过OncePerRequestFilter，对其它请求过滤
-                .addFilter(new JwtPreAuthFilter(authenticationManager()))
+                .addFilter(new JwtPreAuthFilter(authenticationManager(), onlineUserService))
                 .httpBasic().authenticationEntryPoint(new UnAuthEntryPoint()); //没有权限访问
     }
 }

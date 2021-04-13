@@ -27,7 +27,6 @@ public class SwaggerConfig {
     }
 
     private ApiInfo webApiInfo() {
-
         return new ApiInfoBuilder()
                 .title("聊天系统API文档")
                 .description("本文档描述了聊天系统接口定义")

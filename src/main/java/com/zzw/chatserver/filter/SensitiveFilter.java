@@ -97,7 +97,7 @@ public class SensitiveFilter {
      * @param text 待过滤的文本
      * @return 过滤后的文本
      */
-    public String filter(String text) {
+    public String[] filter(String text) {
         if (StringUtils.isBlank(text)) {
             return null;
         }
@@ -108,6 +108,8 @@ public class SensitiveFilter {
         // 指针3
         int end = 0;
         // 过滤结果
+        //用来判断是否有敏感词
+        int flag = 0;
         StringBuilder sb = new StringBuilder();
         while (end < text.length()) {
             char c = text.charAt(end);
@@ -133,6 +135,7 @@ public class SensitiveFilter {
                 tempNode = rootNode;
             } else if (tempNode.isKeywordEnd()) {
                 // 发现敏感词，将begin~position字符串替换掉
+                flag = 1;
                 sb.append(REPLACEMENT);
                 // 指针2指向end的下一个位置
                 begin = ++end;
@@ -145,7 +148,7 @@ public class SensitiveFilter {
         }
         // 将最后一批字符计入结果
         sb.append(text.substring(begin));
-        return sb.toString();
+        return new String[]{sb.toString(), flag + ""};
     }
 
     // 判断是否为符号
