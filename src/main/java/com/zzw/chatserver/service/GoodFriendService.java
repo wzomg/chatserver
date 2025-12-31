@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class GoodFriendService {
     @Resource
@@ -213,7 +215,7 @@ public class GoodFriendService {
         User userInfo = getUser(myId);
         boolean flag = false;
         Map<String, ArrayList<String>> friendFenZuMap = userInfo.getFriendFenZu();
-        // System.out.println("分组map：" + friendFenZuMap);
+        log.info("分组map：{}", friendFenZuMap);
         for (Map.Entry<String, ArrayList<String>> item : friendFenZuMap.entrySet()) {
             Iterator<String> iterator = item.getValue().iterator();
             while (iterator.hasNext()) {
@@ -227,7 +229,7 @@ public class GoodFriendService {
             if (flag) break;
         }
         Map<String, String> friendBeiZhuMap = userInfo.getFriendBeiZhu();
-        // System.out.println("备注map：" + friendBeiZhuMap);
+        log.info("备注map：{}", friendBeiZhuMap);
         friendBeiZhuMap.remove(friendId);
 
         //更新用户信息

@@ -17,11 +17,13 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class UserService {
     @Resource
@@ -100,19 +102,17 @@ public class UserService {
         User userInfo = getUserInfo(requestVo.getUserId());
         Map<String, String> friendBeiZhuMap = userInfo.getFriendBeiZhu();
         friendBeiZhuMap.put(requestVo.getFriendId(), requestVo.getFriendBeiZhuName());
-        //更新用户信息
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(new ObjectId(requestVo.getUserId())));
         Update update = new Update();
         update.set("friendBeiZhu", friendBeiZhuMap);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(new ObjectId(requestVo.getUserId())));
         mongoTemplate.findAndModify(query, update, User.class);
     }
 
     public void modifyFriendFenZu(ModifyFriendFenZuRequestVo requestVo) {
         User userInfo = getUserInfo(requestVo.getUserId());
-        boolean flag = false;
         Map<String, ArrayList<String>> friendFenZuMap = userInfo.getFriendFenZu();
-        // System.out.println("分组map：" + friendFenZuMap);
+        boolean flag = false;
         for (Map.Entry<String, ArrayList<String>> item : friendFenZuMap.entrySet()) {
             Iterator<String> iterator = item.getValue().iterator();
             while (iterator.hasNext()) {
@@ -126,11 +126,11 @@ public class UserService {
             if (flag) break;
         }
         friendFenZuMap.get(requestVo.getNewFenZuName()).add(requestVo.getFriendId());
-        //更新用户信息
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(new ObjectId(requestVo.getUserId())));
+        log.info("分组map：{}", friendFenZuMap);
         Update update = new Update();
         update.set("friendFenZu", friendFenZuMap);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(new ObjectId(requestVo.getUserId())));
         mongoTemplate.findAndModify(query, update, User.class);
     }
 

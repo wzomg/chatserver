@@ -23,3 +23,7 @@
 hs_err_pid*
 
 target/
+
+.idea/**
+
+./~/maven_repository/**

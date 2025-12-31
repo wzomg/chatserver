@@ -36,12 +36,6 @@ public class JwtUtils {
         return Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
     }
 
-    public static void main(String[] args) {
-        //System.out.println(createJwt("aaa",8989L));
-        String aa = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4OTg5IiwidXNlcklkIjo4OTg5LCJ1c2VybmFtZSI6ImFhYSIsImlhdCI6MTYxNDc2NzY5NCwianRpIjoiZmIwYjU5ZjUtZGMwNy00YmY0LTg0MjEtOGY5ODNlMDQyODE1IiwiZXhwIjoxNjE0ODU0MDk1fQ.JeCJeID1RDM2Gah0A0AQo5xPxTH3fEDMR3maSxqn7A0";
-        // System.out.println(parseJwt(aa));
-    }
-
     //删除token
     public void removeToken(String token) {
     }

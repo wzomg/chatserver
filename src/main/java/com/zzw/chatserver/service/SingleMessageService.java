@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
 import java.util.Calendar;
@@ -21,6 +22,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class SingleMessageService {
     @Resource
@@ -81,7 +83,7 @@ public class SingleMessageService {
             calendar.add(Calendar.DATE, 1);
             Date tomorrow = calendar.getTime();
             cri1.and("time").gte(historyMsgRequestVo.getDate()).lt(tomorrow);
-            // System.out.println("today：" + historyMsgRequestVo.getDate() + "，tomorrow：" + tomorrow);
+            log.info("today：{}，tomorrow：{}", historyMsgRequestVo.getDate(), tomorrow);
         }
         // 创建查询对象
         Query query = new Query();

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class SocketIoListener {
@@ -65,7 +66,7 @@ public class SocketIoListener {
     @OnConnect
     public void eventOnConnect(SocketIOClient client) {
         Map<String, List<String>> urlParams = client.getHandshakeData().getUrlParams();
-        // System.out.println("客户端唯一标识为：" + client.getSessionId());
+        logger.info("客户端唯一标识为：{}", client.getSessionId());
         logger.info("链接开启，urlParams：{}", urlParams);
     }
 
@@ -301,7 +302,7 @@ public class SocketIoListener {
     @OnEvent("apply")
     public void apply(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("apply ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("apply user to，myNickname：" + conversationVo.getMyNickname());
+        logger.info("apply user to，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -314,7 +315,7 @@ public class SocketIoListener {
     @OnEvent("reply")
     public void reply(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("reply ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("reply，myNickname：" + conversationVo.getMyNickname());
+        logger.info("reply，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -327,7 +328,7 @@ public class SocketIoListener {
     @OnEvent("1v1answer")
     public void answer(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("1v1answer ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("1v1answer，myNickname：" + conversationVo.getMyNickname());
+        logger.info("1v1answer，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -338,9 +339,9 @@ public class SocketIoListener {
 
     //转发 ICE，选取最佳的链接方式
     @OnEvent("1v1ICE")
-    public void ICE(SocketIOClient client, CurrentConversationVo conversationVo) {
+    public void ice(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("1v1ICE ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("1v1ICE，myNickname：" + conversationVo.getMyNickname());
+        logger.info("1v1ICE，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -353,7 +354,7 @@ public class SocketIoListener {
     @OnEvent("1v1offer")
     public void offer(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("1v1offer ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("1v1offer，myNickname：" + conversationVo.getMyNickname());
+        logger.info("1v1offer，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -366,7 +367,7 @@ public class SocketIoListener {
     @OnEvent("1v1hangup")
     public void hangup(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("1v1hangup ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("1v1hangup，myNickname：" + conversationVo.getMyNickname());
+        logger.info("1v1hangup，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
