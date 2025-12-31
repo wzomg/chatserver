@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -78,6 +79,7 @@ public class GroupMessageService {
         return mongoTemplate.find(query, GroupMessageResultVo.class, "groupmessages");
     }
 
+    @Async
     public void addNewGroupMessage(GroupMessage groupMessage) {
         groupMessageDao.save(groupMessage);
     }

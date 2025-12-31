@@ -11,13 +11,11 @@ import com.zzw.chatserver.pojo.*;
 import com.zzw.chatserver.pojo.vo.*;
 import com.zzw.chatserver.service.*;
 import com.zzw.chatserver.utils.DateUtil;
-import com.zzw.chatserver.utils.SocketIoServerMapUtil;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Collection;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@Transactional(rollbackFor = Throwable.class)//当你的方法中抛出异常时，它会将事务回滚到进入此方法前的状态，数据库中的数据将不会改变。
 public class SocketIoListener {
     private Logger logger = LoggerFactory.getLogger(SocketIoListener.class);
 
@@ -80,7 +77,6 @@ public class SocketIoListener {
         //清除用户登录信息
         cleanLoginInfo(client.getSessionId().toString());
         logger.info("链接关闭，urlParams：{}", urlParams);
-        // logger.info("剩余在线人数：{}", SocketIoServerMapUtil.getUidToUserMap().size());
         // logger.info("剩余在线人数：{}", onlineUserService.countOnlineUser());
         socketIOServer.getBroadcastOperations().sendEvent("onlineUser", onlineUserService.getOnlineUidSet());
     }
@@ -94,20 +90,6 @@ public class SocketIoListener {
             userService.updateOnlineTime(onlineTime, simpleUser.getUid());
         }
 
-        /*String uid = SocketIoServerMapUtil.getUid(clientId);
-        if (uid != null) {
-            SimpleUser simpleUser = SocketIoServerMapUtil.getUser(uid);
-            // System.out.println("待删除的用户信息为：" + simpleUser);
-            if (simpleUser != null) {
-                //先删除 uid->User 的一对键值对
-                SocketIoServerMapUtil.removeUser(uid);
-                //设置下线用户的在线时长
-                long onlineTime = DateUtil.getTimeDelta(simpleUser.getLastLoginTime(), new Date());
-                userService.updateOnlineTime(onlineTime, uid);
-            }
-            //后删除 clientId -> uid 的一对键值对
-            SocketIoServerMapUtil.removeUid(clientId);
-        }*/
         printMessage();
     }
 
@@ -126,13 +108,10 @@ public class SocketIoListener {
         BeanUtils.copyProperties(user, simpleUser);
 
         onlineUserService.addClientIdToSimpleUser(clientId, simpleUser);
-        // SocketIoServerMapUtil.putUid(clientId, user.getUid());
-        // SocketIoServerMapUtil.putUser(user.getUid(), simpleUser);
 
         printMessage();
 
         //广播所有在线用户
-        // socketIOServer.getBroadcastOperations().sendEvent("onlineUser", SocketIoServerMapUtil.getUidToUserMap());
         socketIOServer.getBroadcastOperations().sendEvent("onlineUser", onlineUserService.getOnlineUidSet());
 
     }
@@ -144,7 +123,6 @@ public class SocketIoListener {
         //清除用户登录信息
         cleanLoginInfo(client.getSessionId().toString());
         //广播所有在线用户
-        // socketIOServer.getBroadcastOperations().sendEvent("onlineUser", SocketIoServerMapUtil.getUidToUserMap());
         socketIOServer.getBroadcastOperations().sendEvent("onlineUser", onlineUserService.getOnlineUidSet());
     }
 

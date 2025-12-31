@@ -4,7 +4,6 @@ import com.zzw.chatserver.common.GlobalException;
 import com.zzw.chatserver.common.ResultEnum;
 import com.zzw.chatserver.service.OnlineUserService;
 import com.zzw.chatserver.utils.JwtUtils;
-import com.zzw.chatserver.utils.SocketIoServerMapUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
@@ -64,7 +63,6 @@ public class JwtPreAuthFilter extends BasicAuthenticationFilter {
             logger.error("Token过期了，获取到的过期凭证为：{}", e.getClaims());
             //若token过期了，则清除 uid->user 表对应的用户信息，以防下次登录时还显示用户在线
             String userId = e.getClaims().getSubject();
-            // SocketIoServerMapUtil.removeUser(userId);
             //这里需要移除在线用户列表中登录过期凭证的用户id
             onlineUserService.removeClientAndUidInSet("", userId);
             throw new GlobalException(ResultEnum.TOKEN_VALIDATION_EXPIRED);

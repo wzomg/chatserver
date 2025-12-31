@@ -10,7 +10,6 @@ import com.zzw.chatserver.pojo.vo.LoginRequestVo;
 import com.zzw.chatserver.service.OnlineUserService;
 import com.zzw.chatserver.utils.JwtUtils;
 import com.zzw.chatserver.utils.ResponseUtil;
-import com.zzw.chatserver.utils.SocketIoServerMapUtil;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -73,8 +72,6 @@ public class JwtLoginAuthFilter extends UsernamePasswordAuthenticationFilter {
             //================================在这里对账号进行判别=========
             if (jwtUser.getStatus() == 1 || jwtUser.getStatus() == 2)
                 ResponseUtil.out(response, R.error().resultEnum(ResultEnum.ACCOUNT_IS_FROZEN_OR_CANCELLED));
-            /*else if (SocketIoServerMapUtil.getUidToUserMap().containsKey(jwtUser.getUserId().toString())) //用户已经在别处登录了
-                ResponseUtil.out(response, R.error().resultEnum(ResultEnum.USER_HAS_LOGGED));*/
             else if (onlineUserService.checkCurUserIsOnline(jwtUser.getUserId().toString())) //用户已经在别处登录了
                 ResponseUtil.out(response, R.error().resultEnum(ResultEnum.USER_HAS_LOGGED));
             else { //用户通过验证
