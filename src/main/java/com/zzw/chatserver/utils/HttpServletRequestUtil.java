@@ -4,7 +4,7 @@ package com.zzw.chatserver.utils;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.servlet.ServletRequest;
+import jakarta.servlet.ServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 
