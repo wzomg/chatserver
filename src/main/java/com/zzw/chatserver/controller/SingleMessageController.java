@@ -49,7 +49,6 @@ public class SingleMessageController {
      */
     @PostMapping("/historyMessage")
     public R getSingleHistoryMessages(@RequestBody HistoryMsgRequestVo historyMsgVo) {
-        // System.out.println("查看历史消息的请求参数为：" + historyMsgVo);
         SingleHistoryResultVo singleHistoryMsg = singleMessageService.getSingleHistoryMsg(historyMsgVo);
         return R.ok().data("total", singleHistoryMsg.getTotal()).data("msgList", singleHistoryMsg.getMsgList());
     }

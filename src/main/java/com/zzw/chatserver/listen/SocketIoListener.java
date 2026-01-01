@@ -95,8 +95,6 @@ public class SocketIoListener {
     }
 
     private void printMessage() {
-        //logger.info("当前在线客户端为：{}", SocketIoServerMapUtil.getClientToUidMap());
-        //logger.info("在线用户的信息为：{}", SocketIoServerMapUtil.getUidToUserMap());
         logger.info("当前在线用户人数为：{}", onlineUserService.countOnlineUser());
     }
 
@@ -157,13 +155,11 @@ public class SocketIoListener {
             SingleMessage singleMessage = new SingleMessage();
             BeanUtils.copyProperties(newMessageVo, singleMessage);
             singleMessage.setSenderId(new ObjectId(newMessageVo.getSenderId()));
-            // System.out.println("待插入的单聊消息为：" + singleMessage);
             singleMessageService.addNewSingleMessage(singleMessage);
         } else if (newMessageVo.getConversationType().equals(ConstValueEnum.GROUP)) {
             GroupMessage groupMessage = new GroupMessage();
             BeanUtils.copyProperties(newMessageVo, groupMessage);
             groupMessage.setSenderId(new ObjectId(newMessageVo.getSenderId()));
-            // System.out.println("待插入的群聊消息为：" + groupMessage);
             groupMessageService.addNewGroupMessage(groupMessage);
         }
         //通知该房间收到消息接受到消息

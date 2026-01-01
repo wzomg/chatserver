@@ -122,7 +122,6 @@ public class GoodFriendService {
                 )
         );
         List<MyFriendListVo> friendlies = mongoTemplate.aggregate(aggregation, "goodfriends", MyFriendListVo.class).getMappedResults();
-        // System.out.println("查询最近的好友列表为：" + friendlies);
         List<SingleRecentConversationResultVo> resultVoList = new ArrayList<>();
         SingleRecentConversationResultVo item;
         SimpleUser userM, userY;
@@ -158,7 +157,6 @@ public class GoodFriendService {
         );
         GoodFriend one = mongoTemplate.findOne(query, GoodFriend.class);
         if (one == null) {
-            // System.out.println("准备添加好友！");
             goodFriendDao.save(goodFriend);
             //添加好友时顺便将对方默认设置到 我的好友 这个分组
             modifyNewUserFenZu(goodFriend.getUserM().toString(), goodFriend.getUserY().toString());

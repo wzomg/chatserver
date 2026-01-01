@@ -26,7 +26,6 @@ public class GoodFriendController {
     @GetMapping("/getMyFriendsList")
     public R getMyFriendsList(String userId) {
         List<MyFriendListResultVo> myFriendsList = goodFriendService.getMyFriendsList(userId);
-        // System.out.println("我的好友列表为：" + myFriendsList);
         return R.ok().data("myFriendsList", myFriendsList);
     }
 

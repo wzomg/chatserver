@@ -13,6 +13,7 @@ import com.zzw.chatserver.service.SysService;
 import com.zzw.chatserver.service.UserService;
 import com.zzw.chatserver.utils.FastDFSUtil;
 import com.zzw.chatserver.utils.SystemUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.csource.common.MyException;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/sys")
 public class SysController {
@@ -55,7 +57,6 @@ public class SysController {
     @ResponseBody
     public R getFaceImages() {
         //String path = ClassUtils.getDefaultClassLoader().getResource("").getPath() + "static/face";
-        //System.out.println(path);
         ArrayList<String> files = new ArrayList<>();
         //File file = new File(path);
         /*for (File item : Objects.requireNonNull(file.listFiles())) {
@@ -75,7 +76,6 @@ public class SysController {
     @ResponseBody
     public R getSysUsers() {
         List<SystemUserResponseVo> sysUsers = sysService.getSysUsers();
-        // System.out.println("系统用户有：" + sysUsers);
         return R.ok().data("sysUsers", sysUsers);
     }
 
@@ -88,7 +88,6 @@ public class SysController {
         //根据扩展名来设置消息类型：emoji/text/img/file/sys/whiteboard/video/audio
         String filePartName = FastDFSUtil.uploadFile(file);
         String filePath = nginxHost + filePartName;
-        // System.out.println("在服务器的文件名为：" + filePartName);
         return R.ok().data("filePath", filePath);
     }
 
@@ -96,7 +95,6 @@ public class SysController {
     /*@GetMapping("/getRealFilePath")
     public R getRealFilePath(String fileId) throws UnsupportedEncodingException, NoSuchAlgorithmException, MyException {
         String fileUrl = FastDFSUtil.getToken(fileId);
-        System.out.println("返回的真实路径为：" + fileUrl);
         return R.ok().data("realFilePath", fileUrl);
     }*/
 
@@ -114,7 +112,7 @@ public class SysController {
             ServletOutputStream outputStream = resp.getOutputStream();
             IOUtils.write(bytes, outputStream);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("File download failed", e);
         }
     }
 
@@ -135,7 +133,6 @@ public class SysController {
     @PostMapping("/addFeedBack")
     @ResponseBody
     public R addFeedBack(@RequestBody FeedBack feedBack) {
-        // System.out.println("反馈请求参数为：" + feedBack);
         sysService.addFeedBack(feedBack);
         return R.ok().message("感谢您的反馈！");
     }

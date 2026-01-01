@@ -26,4 +26,6 @@ target/
 
 .idea/**
 
-./~/maven_repository/**
+~/maven_repository/**
+
+.vscode/**

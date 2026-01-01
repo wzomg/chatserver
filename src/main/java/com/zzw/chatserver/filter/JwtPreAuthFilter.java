@@ -36,9 +36,8 @@ public class JwtPreAuthFilter extends BasicAuthenticationFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         String tokenHeader = request.getHeader(JwtUtils.TOKEN_HEADER);
-        // System.out.println("tokenHeader：" + tokenHeader);
         // 若请求头中没有 Authorization 信息则直接放行了
-        if (tokenHeader == null /*|| !tokenHeader.startsWith(JwtUtils.TOKEN_PREFIX)*/) {
+        if (tokenHeader == null) {
             chain.doFilter(request, response);
             return;
         }
@@ -54,7 +53,6 @@ public class JwtPreAuthFilter extends BasicAuthenticationFilter {
         try {
             //解析token
             Claims claims = JwtUtils.parseJwt(token);
-            // System.out.println("解析得到的token信息为：" + claims);
             String userId = claims.getSubject(); //用户唯一标识id，这里跟创建token时有关
             if (userId != null) {
                 return new UsernamePasswordAuthenticationToken(userId, null, new ArrayList<>());

@@ -9,6 +9,7 @@ import com.zzw.chatserver.pojo.vo.*;
 import com.zzw.chatserver.service.*;
 import com.zzw.chatserver.utils.FastDFSUtil;
 import com.zzw.chatserver.utils.RedisKeyUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.csource.common.MyException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 @SpringBootTest
+@Slf4j
 class ChatServerApplicationTests {
 
     @Resource
@@ -64,20 +66,20 @@ class ChatServerApplicationTests {
     @Test
     void getMyGroup() {
         List<MyGroupResultVo> zzw = groupUserService.getGroupUsersByUserName("zhaoliu");
-        System.out.println(JSON.toJSON(zzw).toString());
+        log.info(JSON.toJSON(zzw).toString());
     }
 
     @Test
     void getGroupInfo() {
         Group groupInfo = groupService.getGroupInfo("604e9de2bcb9ec60ead96d6d");
-        System.out.println(JSON.toJSON(groupInfo).toString());
+        log.info(JSON.toJSON(groupInfo).toString());
     }
 
     @Test
     void searchGroup() {
         SearchRequestVo searchGroupVo = new SearchRequestVo("code", "1", 0, 3);
         List<SearchGroupResponseVo> searchGroupResultVos = groupService.searchGroup(searchGroupVo, "");
-        System.out.println(JSON.toJSON(searchGroupResultVos));
+        log.info(JSON.toJSONString(searchGroupResultVos));
     }
 
     @Test
@@ -86,13 +88,13 @@ class ChatServerApplicationTests {
         accountPool.setStatus(1);
         accountPool.setType(2);
         accountPoolService.saveAccount(accountPool);
-        System.out.println(accountPool);
+        log.info(accountPool.toString());
     }
 
     @Test
     void getAllGroup() {
         List<SearchGroupResultVo> allGroup = groupService.getAllGroup();
-        System.out.println(allGroup);
+        log.info(allGroup.toString());
     }
 
     @Test

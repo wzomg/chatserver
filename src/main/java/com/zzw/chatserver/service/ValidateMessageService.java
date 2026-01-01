@@ -45,7 +45,6 @@ public class ValidateMessageService {
         Update update = new Update();
         update.set("status", status);
         UpdateResult result = mongoTemplate.upsert(query, update, "validatemessages");
-        // System.out.println("是否更新成功？" + result);
     }
 
 
@@ -59,7 +58,6 @@ public class ValidateMessageService {
                 ), Aggregation.match(Criteria.where("receiverId").is(new ObjectId(userId)))
         );
         List<ValidateMessageResultVo> validatemessages = mongoTemplate.aggregate(aggregation, "validatemessages", ValidateMessageResultVo.class).getMappedResults();
-        // System.out.println("查询我的验证消息列表结果为：" + validatemessages);
         List<ValidateMessageResponseVo> responseVoList = new ArrayList<>();
         ValidateMessageResponseVo item;
         for (ValidateMessageResultVo son : validatemessages) {

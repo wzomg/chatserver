@@ -47,7 +47,6 @@ public class UserController {
         String verificationCode = ChatServerUtil.generatorCode();
         // redis 有效时间为 60s
         redisTemplate.opsForValue().set(redisKey, verificationCode, 60, TimeUnit.SECONDS);
-        // System.out.println("生成的验证码uuid：" + kaptchaOwner + "验证码为：" + verificationCode);
         return R.ok().data("code", verificationCode);
     }
 
@@ -96,7 +95,6 @@ public class UserController {
      */
     @PostMapping("/modifyFriendFenZu")
     public R modifyFriendFenZu(@RequestBody ModifyFriendFenZuRequestVo requestVo) {
-        // System.out.println("修改分组的请求参数为：" + requestVo);
         userService.modifyFriendFenZu(requestVo);
         return R.ok().message("修改分组成功！");
     }
@@ -124,11 +122,8 @@ public class UserController {
      */
     @PostMapping("/preFetchUser")
     public R searchUser(@RequestBody SearchRequestVo requestVo) {
-        // System.out.println("搜索的用户信息为：" + requestVo);
-        // System.out.println("当前安全认证信息为：" + SecurityContextHolder.getContext().getAuthentication());
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); // 这个 principal 跟校验token时保存认证信息有关
         List<User> userList = userService.searchUser(requestVo, userId);
-        // System.out.println("搜索的用户信息返回的结果为：" + userList);
         return R.ok().data("userList", userList);
     }
 
@@ -137,7 +132,6 @@ public class UserController {
      */
     @PostMapping("/updateUserInfo")
     public R updateUserInfo(@RequestBody UpdateUserInfoRequestVo requestVo) {
-        // System.out.println("更新用户信息的请求参数为：" + requestVo);
         Map<String, Object> resMap = userService.updateUserInfo(requestVo);
         if (resMap.size() > 0) return R.error().code((Integer) resMap.get("code")).message((String) resMap.get("msg"));
         else return R.ok().message("修改成功");
@@ -148,7 +142,6 @@ public class UserController {
      */
     @PostMapping("/updateUserConfigure")
     public R updateUserConfigure(@RequestBody UpdateUserConfigureRequestVo requestVo) {
-        // System.out.println("更新用户的一些配置信息为：" + requestVo);
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); // 这个 principal 跟校验token时保存认证信息有关
         boolean res = userService.updateUserConfigure(requestVo, userId);
         if (res) {
@@ -162,7 +155,6 @@ public class UserController {
      */
     @PostMapping("/updateUserPwd")
     public R updateUserPwd(@RequestBody UpdateUserPwdRequestVo requestVo) {
-        // System.out.println("更新密码的请求参数为：" + requestVo);
         Map<String, Object> resMap = userService.updateUserPwd(requestVo);
         Integer code = (Integer) resMap.get("code");
         if (code.equals(ResultEnum.SUCCESS.getCode()))
