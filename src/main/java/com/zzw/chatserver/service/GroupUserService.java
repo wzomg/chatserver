@@ -14,11 +14,13 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class GroupUserService {
     @Resource
@@ -42,7 +44,7 @@ public class GroupUserService {
         );
 
         List<MyGroupResultVo> groupusers = mongoTemplate.aggregate(aggregation, "groupusers", MyGroupResultVo.class).getMappedResults();
-        // System.out.println(groupusers);
+        log.info("{}", groupusers);
         return groupusers;
     }
 

@@ -10,7 +10,8 @@ import com.zzw.chatserver.pojo.vo.LoginRequestVo;
 import com.zzw.chatserver.service.OnlineUserService;
 import com.zzw.chatserver.utils.JwtUtils;
 import com.zzw.chatserver.utils.ResponseUtil;
-import com.zzw.chatserver.utils.SocketIoServerMapUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -21,15 +22,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class JwtLoginAuthFilter extends UsernamePasswordAuthenticationFilter {
+    private static final Logger logger = LoggerFactory.getLogger(JwtLoginAuthFilter.class);
+
     private AuthenticationManager authenticationManager;
 
     private MongoTemplate mongoTemplate;
@@ -52,8 +55,8 @@ public class JwtLoginAuthFilter extends UsernamePasswordAuthenticationFilter {
                     new UsernamePasswordAuthenticationToken(lvo.getUsername(), lvo.getPassword(), new ArrayList<>())
             );
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
+            logger.error("Authentication attempt failed", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -66,15 +69,11 @@ public class JwtLoginAuthFilter extends UsernamePasswordAuthenticationFilter {
         try {
             //这里可以再次使用request
             LoginRequestVo lvo = new ObjectMapper().readValue(request.getInputStream(), LoginRequestVo.class);
-            // System.out.println("验证成功后========================================登录请求参数为：" + lvo);
             //查看源代码会发现调用getPrincipal()方法会返回一个实现了`UserDetails`接口的对象，这里是JwtAuthUser
             JwtAuthUser jwtUser = (JwtAuthUser) authResult.getPrincipal();
-            // System.out.println("JwtAuthUser：" + jwtUser.toString());
             //================================在这里对账号进行判别=========
             if (jwtUser.getStatus() == 1 || jwtUser.getStatus() == 2)
                 ResponseUtil.out(response, R.error().resultEnum(ResultEnum.ACCOUNT_IS_FROZEN_OR_CANCELLED));
-            /*else if (SocketIoServerMapUtil.getUidToUserMap().containsKey(jwtUser.getUserId().toString())) //用户已经在别处登录了
-                ResponseUtil.out(response, R.error().resultEnum(ResultEnum.USER_HAS_LOGGED));*/
             else if (onlineUserService.checkCurUserIsOnline(jwtUser.getUserId().toString())) //用户已经在别处登录了
                 ResponseUtil.out(response, R.error().resultEnum(ResultEnum.USER_HAS_LOGGED));
             else { //用户通过验证
@@ -86,18 +85,16 @@ public class JwtLoginAuthFilter extends UsernamePasswordAuthenticationFilter {
                 update.set("loginSetting", lvo.getSetting());
                 //设置一下uid
                 update.set("uid", jwtUser.getUserId().toString());
-                // System.out.println("当前登录用户的uid为：" + jwtUser.getUserId().toString());
                 jwtUser.setLastLoginTime(new Date());
                 jwtUser.setLoginSetting(lvo.getSetting());
                 jwtUser.setUid(jwtUser.getUserId().toString());
                 UpdateResult updateResult = mongoTemplate.upsert(query, update, User.class);
-                // System.out.println("更新用户表是否成功？" + updateResult);
                 //生成token
                 String token = JwtUtils.createJwt(jwtUser.getUserId().toString(), jwtUser.getUsername());
                 ResponseUtil.out(response, R.ok().resultEnum(ResultEnum.LOGIN_SUCCESS).data("token", token).data("userInfo", jwtUser));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Successful authentication handling failed", e);
         }
     }
 

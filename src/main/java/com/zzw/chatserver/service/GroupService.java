@@ -21,14 +21,16 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 
+@Slf4j
 @Service
 public class GroupService {
     @Resource
@@ -145,28 +147,28 @@ public class GroupService {
         Query query = new Query();
         query.addCriteria(Criteria.where("roomId").is(groupId));
         DeleteResult groupmessages = mongoTemplate.remove(query, "groupmessages");
-        // System.out.println("删除该群所有消息是否成功？" + groupmessages.getDeletedCount());
+        log.info("删除该群所有消息是否成功？{}", groupmessages.getDeletedCount());
     }
 
     private void delGroupAllUsersByGroupId(String groupId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("groupId").is(new ObjectId(groupId)));
         DeleteResult groupusers = mongoTemplate.remove(query, "groupusers");
-        // System.out.println("删除该群所有成员是否成功？" + groupusers.getDeletedCount());
+        log.info("删除该群所有成员是否成功？{}", groupusers.getDeletedCount());
     }
 
     private void delGroupMessagesByGroupIdAndSenderId(String groupId, String senderId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("roomId").is(groupId).and("senderId").is(new ObjectId(senderId)));
         DeleteResult groupmessages = mongoTemplate.remove(query, "groupmessages");
-        // System.out.println("删除该用户所发的群消息是否成功？" + groupmessages.getDeletedCount());
+        log.info("删除该用户所发的群消息是否成功？{}", groupmessages.getDeletedCount());
     }
 
     private void delGroupUserByGroupIdAndUserId(String groupId, String userId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("groupId").is(new ObjectId(groupId)).and("userId").is(new ObjectId(userId)));
         DeleteResult groupusers = mongoTemplate.remove(query, "groupusers");
-        // System.out.println("删除该群成员是否成功？" + groupusers.getDeletedCount());
+        log.info("删除该群成员是否成功？{}", groupusers.getDeletedCount());
     }
 
     private void decrGroupUserNum(String gid) {
@@ -175,6 +177,6 @@ public class GroupService {
         Update update = new Update();
         update.inc("userNum", -1); //该群人数减去1
         UpdateResult groups = mongoTemplate.upsert(query, update, "groups");
-        // System.out.println("该群人数递减1是否成功？" + groups.getModifiedCount());
+        log.info("该群人数递减1是否成功？{}", groups.getModifiedCount());
     }
 }

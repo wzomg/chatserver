@@ -2,12 +2,15 @@ package com.zzw.chatserver.utils;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class HttpIpUtils {
+    private static final Logger logger = LoggerFactory.getLogger(HttpIpUtils.class);
 
     /**
      * 真实ip地址
@@ -61,10 +64,11 @@ public class HttpIpUtils {
                     try {
                         inet = InetAddress.getLocalHost();
                     } catch (UnknownHostException e) {
-                        e.printStackTrace();
+                        logger.error("Failed to get local host address", e);
                     }
-                    assert inet != null;
-                    ip = inet.getHostAddress();
+                    if (inet != null) {
+                        ip = inet.getHostAddress();
+                    }
                 }
             }
             // 对于通过多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
@@ -76,6 +80,7 @@ public class HttpIpUtils {
                 }
             }
         } catch (Exception e) {
+            logger.error("Failed to get client IP", e);
             ip = "";
         }
         return ip;

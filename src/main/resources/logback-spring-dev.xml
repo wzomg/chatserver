@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <contextName>community</contextName>
-    <property name="LOG_PATH" value="D:/logs"/>
+    <property name="LOG_PATH" value="./logs"/>
     <property name="APPDIR" value="chatserver"/>
 
     <!-- error file -->

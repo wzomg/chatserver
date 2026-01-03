@@ -5,7 +5,7 @@ import com.zzw.chatserver.utils.RedisKeyUtil;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 

@@ -9,11 +9,10 @@ spring:
     redis:
       repositories:
         enabled: false
-  redis:
-    database: 5
-    host: 127.0.0.1
-    port: 6379
-    password: 123456
+      database: 5
+      host: 127.0.0.1
+      port: 6379
+      password: 123456
 socketio:
   port: 9999
   workCount: 100

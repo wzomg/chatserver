@@ -9,12 +9,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class GroupMessageService {
     @Resource
@@ -43,7 +46,7 @@ public class GroupMessageService {
             calendar.setTime(groupHistoryVo.getDate());
             calendar.add(Calendar.DATE, 1);
             Date tomorrow = calendar.getTime();
-            // System.out.println("today：" + groupHistoryVo.getDate() + ", tomorrow：" + tomorrow);
+            log.info("today：{}, tomorrow：{}", groupHistoryVo.getDate(), tomorrow);
             cri1.and("time").gte(groupHistoryVo.getDate()).lt(tomorrow);
         }
         // 创建查询对象
@@ -78,6 +81,7 @@ public class GroupMessageService {
         return mongoTemplate.find(query, GroupMessageResultVo.class, "groupmessages");
     }
 
+    @Async
     public void addNewGroupMessage(GroupMessage groupMessage) {
         groupMessageDao.save(groupMessage);
     }

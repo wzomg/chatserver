@@ -9,7 +9,7 @@ import com.zzw.chatserver.service.GroupUserService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 @RestController
@@ -27,7 +27,6 @@ public class GroupController {
     @GetMapping("/getMyGroupList")
     public R getMyGroupList(String username) {
         List<MyGroupResultVo> myGroupList = groupUserService.getGroupUsersByUserName(username);
-        // System.out.println("我的群聊列表为：" + myGroupList);
         return R.ok().data("myGroupList", myGroupList);
     }
 
@@ -36,9 +35,7 @@ public class GroupController {
      */
     @PostMapping("/recentGroup")
     public R getRecentGroup(@RequestBody RecentGroupVo recentGroupVo) {
-        // System.out.println("最近的群聊列表请求参数为：" + recentGroupVo);
         List<MyGroupResultVo> recentGroups = groupUserService.getRecentGroup(recentGroupVo);
-        // System.out.println("最近的群聊列表为：" + recentGroups);
         return R.ok().data("recentGroups", recentGroups);
     }
 
@@ -48,9 +45,7 @@ public class GroupController {
     @GetMapping("/getGroupInfo")
     public R getGroupInfo(String groupId) {
         Group groupInfo = groupService.getGroupInfo(groupId);
-        // System.out.println("查询出的群消息为：" + groupInfo);
         List<MyGroupResultVo> groupUsers = groupUserService.getGroupUsersByGroupId(groupId);
-        // System.out.println("群聊详情为：" + groupUsers);
         return R.ok().data("groupInfo", groupInfo).data("users", groupUsers);
     }
 
@@ -87,7 +82,6 @@ public class GroupController {
      */
     @PostMapping("/quitGroup")
     public R quitGroup(@RequestBody QuitGroupRequestVo requestVo) {
-        // System.out.println("退出群聊的请求参数为：" + requestVo);
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); // 这个 principal 跟校验token时保存认证信息有关
         if (!userId.equals(requestVo.getUserId()))
             return R.error().resultEnum(ResultEnum.ILLEGAL_OPERATION); //当前操作人不匹配，非法操作

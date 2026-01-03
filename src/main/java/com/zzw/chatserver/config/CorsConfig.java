@@ -3,25 +3,24 @@ package com.zzw.chatserver.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsWebFilter;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.web.util.pattern.PathPatternParser;
-
-import java.util.Arrays;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 public class CorsConfig {
-    //解决跨域
     @Bean
-    public CorsWebFilter corsWebFilter() {
+    public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:4000"));
+        // 允许所有域名进行跨域调用
+        config.addAllowedOriginPattern("*");
+        // 允许跨越发送cookie
         config.setAllowCredentials(true);
-        config.addAllowedMethod("*");
+        // 放行全部原始头信息
         config.addAllowedHeader("*");
-        config.setMaxAge(3600L);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
+        // 允许所有请求方法跨域调用
+        config.addAllowedMethod("*");
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        return new CorsWebFilter(source);
+        return new CorsFilter(source);
     }
 }

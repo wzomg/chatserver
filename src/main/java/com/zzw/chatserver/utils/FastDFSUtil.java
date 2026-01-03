@@ -2,6 +2,8 @@ package com.zzw.chatserver.utils;
 
 import org.csource.common.MyException;
 import org.csource.fastdfs.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.time.Instant;
 
 
 public class FastDFSUtil {
+    private static final Logger logger = LoggerFactory.getLogger(FastDFSUtil.class);
     private static StorageClient1 client1;
 
     static {
@@ -20,7 +23,7 @@ public class FastDFSUtil {
             TrackerServer trackerServer = trackerClient.getConnection();
             client1 = new StorageClient1(trackerServer, null);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("FastDFS initialization failed", e);
         }
     }
 
@@ -28,6 +31,9 @@ public class FastDFSUtil {
      * 上传文件
      */
     public static String uploadFile(MultipartFile file) throws IOException, MyException {
+        if (client1 == null) {
+            throw new RuntimeException("FastDFS client is not initialized");
+        }
         String fileName = file.getOriginalFilename();
         //返回上传到服务器的路径
         return client1.upload_file1(file.getBytes(), fileName.substring(fileName.lastIndexOf(".") + 1), null);
@@ -37,10 +43,16 @@ public class FastDFSUtil {
      * 下载文件
      */
     public static byte[] downloadFile(String fileId) throws IOException, MyException {
+        if (client1 == null) {
+            throw new RuntimeException("FastDFS client is not initialized");
+        }
         return client1.download_file1(fileId);
     }
 
     public static String uploadFile(String localFilePath) throws IOException, MyException {
+        if (client1 == null) {
+            throw new RuntimeException("FastDFS client is not initialized");
+        }
         return client1.upload_file1(localFilePath, localFilePath.substring(localFilePath.lastIndexOf(".") + 1), null);
     }
 

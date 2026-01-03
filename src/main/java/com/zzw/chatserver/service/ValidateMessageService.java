@@ -15,11 +15,13 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class ValidateMessageService {
     @Resource
@@ -34,7 +36,7 @@ public class ValidateMessageService {
         Update update = new Update();
         update.set("status", status);
         UpdateResult result = mongoTemplate.upsert(query, update, "validatemessages");
-        // System.out.println("是否更新成功？" + result);
+        log.info("是否更新成功？{}", result);
     }
 
     public void changeGroupValidateNewsStatus(String validateMessageId, Integer status) {
@@ -43,7 +45,6 @@ public class ValidateMessageService {
         Update update = new Update();
         update.set("status", status);
         UpdateResult result = mongoTemplate.upsert(query, update, "validatemessages");
-        // System.out.println("是否更新成功？" + result);
     }
 
 
@@ -57,7 +58,6 @@ public class ValidateMessageService {
                 ), Aggregation.match(Criteria.where("receiverId").is(new ObjectId(userId)))
         );
         List<ValidateMessageResultVo> validatemessages = mongoTemplate.aggregate(aggregation, "validatemessages", ValidateMessageResultVo.class).getMappedResults();
-        // System.out.println("查询我的验证消息列表结果为：" + validatemessages);
         List<ValidateMessageResponseVo> responseVoList = new ArrayList<>();
         ValidateMessageResponseVo item;
         for (ValidateMessageResultVo son : validatemessages) {
@@ -82,7 +82,7 @@ public class ValidateMessageService {
         ValidateMessage res = findValidateMessage(validateMessage.getRoomId(), 0, validateMessage.getValidateType()); //查出未处理状态
         if (res == null)
             return validateMessageDao.save(validateMessage);
-        // System.out.println("查到的验证消息为：" + res);
+        log.info("查到的验证消息为：{}", res);
         return null;
     }
 }

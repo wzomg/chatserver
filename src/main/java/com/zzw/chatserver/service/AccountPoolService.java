@@ -5,7 +5,7 @@ import com.zzw.chatserver.dao.AccountPoolDao;
 import com.zzw.chatserver.pojo.AccountPool;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Service
 public class AccountPoolService {

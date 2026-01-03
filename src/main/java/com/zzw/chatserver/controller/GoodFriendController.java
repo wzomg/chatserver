@@ -10,7 +10,7 @@ import com.zzw.chatserver.service.GoodFriendService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 @RestController
@@ -26,7 +26,6 @@ public class GoodFriendController {
     @GetMapping("/getMyFriendsList")
     public R getMyFriendsList(String userId) {
         List<MyFriendListResultVo> myFriendsList = goodFriendService.getMyFriendsList(userId);
-        // System.out.println("我的好友列表为：" + myFriendsList);
         return R.ok().data("myFriendsList", myFriendsList);
     }
 

@@ -2,11 +2,13 @@ package com.zzw.chatserver.utils;
 
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.servlet.ServletRequest;
+import jakarta.servlet.ServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+@Slf4j
 public class HttpServletRequestUtil {
 
     public static String getBodyTxt(ServletRequest request, String name) throws IOException {
@@ -17,7 +19,7 @@ public class HttpServletRequestUtil {
         while ((str = br.readLine()) != null) {
             wholeStr.append(str);
         }
-        // System.out.println("解析得到的数据为：" + wholeStr.toString());
+        log.info("解析得到的数据为：{}", wholeStr);
         return JSONObject.parseObject(wholeStr.toString()).getString(name);
     }
 }

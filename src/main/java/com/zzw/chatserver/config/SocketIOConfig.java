@@ -3,6 +3,10 @@ package com.zzw.chatserver.config;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.Transport;
 import com.corundumstudio.socketio.annotation.SpringAnnotationScanner;
+import com.corundumstudio.socketio.AuthorizationListener;
+import com.corundumstudio.socketio.HandshakeData;
+import com.zzw.chatserver.utils.JwtUtils;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +52,27 @@ public class SocketIOConfig {
         config.setMaxHttpContentLength(maxHttpContentLength);
         config.setMaxFramePayloadLength(maxFramePayloadLength);
         config.setTransports(Transport.WEBSOCKET);//指定传输协议为WebSocket
+        
+        // 添加鉴权监听器
+        config.setAuthorizationListener(new AuthorizationListener() {
+            @Override
+            public boolean isAuthorized(HandshakeData data) {
+                // 从 URL 参数中获取 token
+                String token = data.getSingleUrlParam("token");
+                if (token == null || "".equals(token)) {
+                    return false;
+                }
+                try {
+                    // 解析并验证 token
+                    Claims claims = JwtUtils.parseJwt(token);
+                    String userId = claims.getSubject();
+                    return userId != null;
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        });
+
         return new SocketIOServer(config);
     }
 

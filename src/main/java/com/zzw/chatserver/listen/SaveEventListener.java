@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 //监听设置某个集合的主键值加1
 @Component

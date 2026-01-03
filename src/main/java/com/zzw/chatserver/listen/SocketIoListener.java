@@ -11,22 +11,20 @@ import com.zzw.chatserver.pojo.*;
 import com.zzw.chatserver.pojo.vo.*;
 import com.zzw.chatserver.service.*;
 import com.zzw.chatserver.utils.DateUtil;
-import com.zzw.chatserver.utils.SocketIoServerMapUtil;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
-@Transactional(rollbackFor = Throwable.class)//当你的方法中抛出异常时，它会将事务回滚到进入此方法前的状态，数据库中的数据将不会改变。
 public class SocketIoListener {
     private Logger logger = LoggerFactory.getLogger(SocketIoListener.class);
 
@@ -68,7 +66,7 @@ public class SocketIoListener {
     @OnConnect
     public void eventOnConnect(SocketIOClient client) {
         Map<String, List<String>> urlParams = client.getHandshakeData().getUrlParams();
-        // System.out.println("客户端唯一标识为：" + client.getSessionId());
+        logger.info("客户端唯一标识为：{}", client.getSessionId());
         logger.info("链接开启，urlParams：{}", urlParams);
     }
 
@@ -80,7 +78,6 @@ public class SocketIoListener {
         //清除用户登录信息
         cleanLoginInfo(client.getSessionId().toString());
         logger.info("链接关闭，urlParams：{}", urlParams);
-        // logger.info("剩余在线人数：{}", SocketIoServerMapUtil.getUidToUserMap().size());
         // logger.info("剩余在线人数：{}", onlineUserService.countOnlineUser());
         socketIOServer.getBroadcastOperations().sendEvent("onlineUser", onlineUserService.getOnlineUidSet());
     }
@@ -94,26 +91,10 @@ public class SocketIoListener {
             userService.updateOnlineTime(onlineTime, simpleUser.getUid());
         }
 
-        /*String uid = SocketIoServerMapUtil.getUid(clientId);
-        if (uid != null) {
-            SimpleUser simpleUser = SocketIoServerMapUtil.getUser(uid);
-            // System.out.println("待删除的用户信息为：" + simpleUser);
-            if (simpleUser != null) {
-                //先删除 uid->User 的一对键值对
-                SocketIoServerMapUtil.removeUser(uid);
-                //设置下线用户的在线时长
-                long onlineTime = DateUtil.getTimeDelta(simpleUser.getLastLoginTime(), new Date());
-                userService.updateOnlineTime(onlineTime, uid);
-            }
-            //后删除 clientId -> uid 的一对键值对
-            SocketIoServerMapUtil.removeUid(clientId);
-        }*/
         printMessage();
     }
 
     private void printMessage() {
-        //logger.info("当前在线客户端为：{}", SocketIoServerMapUtil.getClientToUidMap());
-        //logger.info("在线用户的信息为：{}", SocketIoServerMapUtil.getUidToUserMap());
         logger.info("当前在线用户人数为：{}", onlineUserService.countOnlineUser());
     }
 
@@ -126,13 +107,10 @@ public class SocketIoListener {
         BeanUtils.copyProperties(user, simpleUser);
 
         onlineUserService.addClientIdToSimpleUser(clientId, simpleUser);
-        // SocketIoServerMapUtil.putUid(clientId, user.getUid());
-        // SocketIoServerMapUtil.putUser(user.getUid(), simpleUser);
 
         printMessage();
 
         //广播所有在线用户
-        // socketIOServer.getBroadcastOperations().sendEvent("onlineUser", SocketIoServerMapUtil.getUidToUserMap());
         socketIOServer.getBroadcastOperations().sendEvent("onlineUser", onlineUserService.getOnlineUidSet());
 
     }
@@ -144,7 +122,6 @@ public class SocketIoListener {
         //清除用户登录信息
         cleanLoginInfo(client.getSessionId().toString());
         //广播所有在线用户
-        // socketIOServer.getBroadcastOperations().sendEvent("onlineUser", SocketIoServerMapUtil.getUidToUserMap());
         socketIOServer.getBroadcastOperations().sendEvent("onlineUser", onlineUserService.getOnlineUidSet());
     }
 
@@ -178,13 +155,11 @@ public class SocketIoListener {
             SingleMessage singleMessage = new SingleMessage();
             BeanUtils.copyProperties(newMessageVo, singleMessage);
             singleMessage.setSenderId(new ObjectId(newMessageVo.getSenderId()));
-            // System.out.println("待插入的单聊消息为：" + singleMessage);
             singleMessageService.addNewSingleMessage(singleMessage);
         } else if (newMessageVo.getConversationType().equals(ConstValueEnum.GROUP)) {
             GroupMessage groupMessage = new GroupMessage();
             BeanUtils.copyProperties(newMessageVo, groupMessage);
             groupMessage.setSenderId(new ObjectId(newMessageVo.getSenderId()));
-            // System.out.println("待插入的群聊消息为：" + groupMessage);
             groupMessageService.addNewGroupMessage(groupMessage);
         }
         //通知该房间收到消息接受到消息
@@ -323,7 +298,7 @@ public class SocketIoListener {
     @OnEvent("apply")
     public void apply(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("apply ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("apply user to，myNickname：" + conversationVo.getMyNickname());
+        logger.info("apply user to，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -336,7 +311,7 @@ public class SocketIoListener {
     @OnEvent("reply")
     public void reply(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("reply ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("reply，myNickname：" + conversationVo.getMyNickname());
+        logger.info("reply，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -349,7 +324,7 @@ public class SocketIoListener {
     @OnEvent("1v1answer")
     public void answer(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("1v1answer ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("1v1answer，myNickname：" + conversationVo.getMyNickname());
+        logger.info("1v1answer，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -360,9 +335,9 @@ public class SocketIoListener {
 
     //转发 ICE，选取最佳的链接方式
     @OnEvent("1v1ICE")
-    public void ICE(SocketIOClient client, CurrentConversationVo conversationVo) {
+    public void ice(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("1v1ICE ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("1v1ICE，myNickname：" + conversationVo.getMyNickname());
+        logger.info("1v1ICE，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -375,7 +350,7 @@ public class SocketIoListener {
     @OnEvent("1v1offer")
     public void offer(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("1v1offer ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("1v1offer，myNickname：" + conversationVo.getMyNickname());
+        logger.info("1v1offer，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {
@@ -388,7 +363,7 @@ public class SocketIoListener {
     @OnEvent("1v1hangup")
     public void hangup(SocketIOClient client, CurrentConversationVo conversationVo) {
         logger.info("1v1hangup ---> roomId：{}", conversationVo.getRoomId());
-        // System.out.println("1v1hangup，myNickname：" + conversationVo.getMyNickname());
+        logger.info("1v1hangup，myNickname：{}", conversationVo.getMyNickname());
         Collection<SocketIOClient> clients = socketIOServer.getRoomOperations(conversationVo.getRoomId()).getClients(); //实际上同一房间只有2个客户端
         for (SocketIOClient item : clients) {
             if (item != client) {

@@ -30,8 +30,8 @@ public class SystemUtil {
      * 获取内存使用率
      */
     public static double getSystemMemLoad() {
-        double totalMem = operatingSystemMXBean.getTotalPhysicalMemorySize();
-        double freeMem = operatingSystemMXBean.getFreePhysicalMemorySize();
+        double totalMem = operatingSystemMXBean.getTotalMemorySize();
+        double freeMem = operatingSystemMXBean.getFreeMemorySize();
         return (totalMem - freeMem) / totalMem;
     }
 }

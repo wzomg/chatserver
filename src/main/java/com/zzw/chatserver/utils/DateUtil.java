@@ -2,12 +2,15 @@ package com.zzw.chatserver.utils;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class DateUtil {
+    private static final Logger logger = LoggerFactory.getLogger(DateUtil.class);
 
     /**
      * 时间格式（yyyy-MM-dd HH:mm:ss）
@@ -33,7 +36,7 @@ public class DateUtil {
             try {
                 date = sdf.parse(dateStr);
             } catch (ParseException e) {
-                e.printStackTrace();
+                logger.error("Date parse error", e);
             }
         }
         return date;
